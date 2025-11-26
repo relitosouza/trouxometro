@@ -295,4 +295,39 @@
 
         // Monta o HTML com as classes ocultas (result-item)
         resultDiv.innerHTML = `
-            <div class="percentage
+            <div class="percentage result-item">${total}%</div>
+            <div class="message result-item">${msg}</div>
+            <div class="time-bonus result-item">${timeText}</div>
+        `;
+        resultDiv.style.display = "block";
+
+        // Pegamos os elementos criados
+        percentageElement = resultDiv.querySelector.('.percentage');
+        messageElement = resultDiv.querySelector('.message');
+        bonusElement = resultDiv.querySelector('.time-bonus');
+
+        // Inicia a sequência de revelação lenta
+        revelarResultadoLentamente();
+    }
+
+    // ========= 5. REVELAÇÃO LENTA (Animação Sequencial) =========
+    function revelarResultadoLentamente() {
+        // Aparece a porcentagem imediatamente
+        setTimeout(() => {
+            percentageElement.classList.add('show-now');
+        }, 100);
+
+        // Aparece a mensagem principal depois de 1 segundo
+        setTimeout(() => {
+            messageElement.classList.add('show-now');
+        }, 1100);
+
+        // Aparece o bônus depois de 2.2 segundos
+        setTimeout(() => {
+            bonusElement.classList.add('show-now');
+        }, 2200);
+    }
+</script>
+
+</body>
+</html>
