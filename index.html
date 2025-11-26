@@ -3,43 +3,88 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trouxômetro Dinâmico</title>
+    <title>Trouxômetro Pro 3.0</title>
     <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            --container-bg: rgba(255, 255, 255, 0.95);
+            --text-color: #333;
+            --accent-color: #2980b9;
+            --shadow-color: rgba(0,0,0,0.1);
+        }
+
+        /* TEMA MANHÃ */
+        body.morning {
+            --bg-gradient: linear-gradient(120deg, #89f7fe 0%, #66a6ff 100%);
+            --accent-color: #0056b3;
+            --text-color: #2c3e50;
+        }
+
+        /* TEMA TARDE */
+        body.afternoon {
+            --bg-gradient: linear-gradient(45deg, #ff9a9e 0%, #fad0c4 99%, #fad0c4 100%);
+            --accent-color: #e17055;
+            --text-color: #6d214f;
+        }
+
+        /* TEMA NOITE */
+        body.night {
+            --bg-gradient: linear-gradient(109.6deg, rgb(36, 45, 57) 11.2%, rgb(16, 37, 60) 51.2%, rgb(0, 0, 0) 98.6%);
+            --container-bg: rgba(30, 30, 40, 0.95);
+            --text-color: #ecf0f1;
+            --accent-color: #d63031;
+            --shadow-color: rgba(0,0,0,0.5);
+        }
+        
+        body.night input { background-color: #2c3e50; color: white; border-color: #444; }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #FF9A9E 0%, #FECFEF 99%, #FECFEF 100%);
+            background: var(--bg-gradient);
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
             margin: 0;
-            color: #333;
+            transition: background 1s ease;
         }
+
         .container {
-            background: white;
+            background: var(--container-bg);
             padding: 2.5rem;
             border-radius: 20px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+            box-shadow: 0 15px 35px var(--shadow-color);
             text-align: center;
             max-width: 450px;
             width: 90%;
+            transition: all 0.5s ease;
         }
-        h1 { color: #d63031; margin-bottom: 10px; }
-        p.subtitle { color: #666; font-size: 0.9em; margin-bottom: 25px; }
+
+        h1 { color: var(--accent-color); margin-bottom: 5px; }
+        .theme-badge { 
+            font-size: 0.8em; 
+            background: var(--accent-color); 
+            color: white; 
+            padding: 5px 10px; 
+            border-radius: 20px; 
+            display: inline-block;
+            margin-bottom: 20px;
+            opacity: 0.8;
+        }
+
         input {
             width: 100%;
             padding: 15px;
-            margin: 10px 0;
-            border: 2px solid #eee;
+            margin: 15px 0;
+            border: 2px solid #ddd;
             border-radius: 10px;
             box-sizing: border-box;
             font-size: 16px;
             outline: none;
-            transition: border-color 0.3s;
         }
-        input:focus { border-color: #d63031; }
+        
         button {
-            background: #d63031;
+            background: var(--accent-color);
             color: white;
             border: none;
             padding: 15px 25px;
@@ -47,101 +92,187 @@
             cursor: pointer;
             font-size: 18px;
             font-weight: bold;
-            transition: transform 0.2s, background 0.2s;
             width: 100%;
-            margin-top: 10px;
+            transition: transform 0.2s;
         }
-        button:hover { background: #b71c1c; transform: translateY(-2px); }
+        button:hover { transform: translateY(-3px); opacity: 0.9; }
+        button:disabled { background: #ccc; cursor: not-allowed; transform: none; }
+
+        /* LOADING AREA */
+        #loading {
+            display: none;
+            margin-top: 25px;
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(0,0,0,0.1);
+            border-left-color: var(--accent-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px auto;
+        }
+        .loading-text {
+            color: var(--text-color);
+            font-style: italic;
+            font-size: 1.1em;
+            min-height: 1.5em; /* Evita pulo de layout */
+            animation: fadeText 0.5s ease-in-out;
+        }
+
+        /* RESULT AREA */
         #result {
             margin-top: 25px;
             padding: 20px;
             border-radius: 12px;
             display: none;
-            animation: popIn 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            background: rgba(255,255,255,0.1);
+            border: 2px dashed var(--accent-color);
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        .percentage { font-size: 4em; font-weight: 800; color: #d63031; display: block; line-height: 1; }
-        .details { font-size: 0.9em; color: #888; margin-top: 5px; font-style: italic; }
-        .message { font-size: 1.2em; font-weight: 500; color: #333; margin-top: 15px; display: block; }
-        
-        @keyframes popIn { 
-            0% { opacity: 0; transform: scale(0.5); } 
-            100% { opacity: 1; transform: scale(1); } 
-        }
+        .percentage { font-size: 3.5em; font-weight: 800; color: var(--accent-color); display: block; }
+        .message { font-size: 1.1em; color: var(--text-color); margin-top: 10px; display: block; }
+
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes fadeText { 0% { opacity: 0; } 100% { opacity: 1; } }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>🤡 Trouxômetro 2.0</h1>
-    <p class="subtitle">Agora ajustado pelo fuso horário da sua carência.</p>
+    <h1>🤡 Trouxômetro</h1>
+    <div id="themeIndicator" class="theme-badge">Carregando tema...</div>
     
-    <input type="text" id="nameInput" placeholder="Nome do(a) iludido(a)...">
-    <button onclick="calcularTrouxa()">Calcular Nível Agora</button>
+    <input type="text" id="nameInput" placeholder="Digite o nome do ser humano...">
+    <button id="btnCalc" onclick="iniciarProcessamento()">Analisar Trouxice</button>
     
+    <div id="loading">
+        <div class="spinner"></div>
+        <div id="loadingMessage" class="loading-text">Iniciando...</div>
+    </div>
+
     <div id="result"></div>
 </div>
 
 <script>
-    function calcularTrouxa() {
+    // 1. TEMA DINÂMICO (Mantido)
+    let currentHour = new Date().getHours();
+    
+    function setDynamicTheme() {
+        const body = document.body;
+        const badge = document.getElementById('themeIndicator');
+        let mode = "";
+        body.classList.remove('morning', 'afternoon', 'night');
+
+        if (currentHour >= 6 && currentHour < 12) {
+            body.classList.add('morning');
+            mode = "☀️ Modo Manhã: Análise Racional";
+        } else if (currentHour >= 12 && currentHour < 18) {
+            body.classList.add('afternoon');
+            mode = "🌤️ Modo Tarde: Risco Moderado";
+        } else {
+            body.classList.add('night');
+            mode = "🌙 Modo Noite: Alta Vulnerabilidade";
+        }
+        badge.innerText = mode;
+    }
+    setDynamicTheme();
+
+    // 2. FRASES ENGRAÇADAS DE CARREGAMENTO
+    const loadingPhrases = [
+        "Consultando histórico de visualização de Stories...",
+        "Calculando quantas vezes perdoou o imperdoável...",
+        "Analisando playlists de sofrência no Spotify...",
+        "Verificando printscreen enviado para a melhor amiga...",
+        "Acessando banco de dados de 'Oi Sumida'...",
+        "Contando quantos 'não é você, sou eu' já ouviu...",
+        "Medindo nível de dignidade restante...",
+        "Chamando o VAR da ilusão..."
+    ];
+
+    function iniciarProcessamento() {
         const name = document.getElementById('nameInput').value.trim();
+        if (!name) { alert("Digite um nome!"); return; }
+
+        // Esconde resultado anterior e mostra loading
+        document.getElementById('result').style.display = 'none';
+        const loadingDiv = document.getElementById('loading');
+        const btn = document.getElementById('btnCalc');
+        const loadingText = document.getElementById('loadingMessage');
+        
+        loadingDiv.style.display = 'block';
+        btn.disabled = true; // Trava o botão
+        btn.innerText = "Processando...";
+
+        // Ciclo de frases aleatórias
+        let counter = 0;
+        // Tempo total de espera: 4.5 segundos (5 trocas de frase de 900ms)
+        const totalDuration = 4500; 
+        const intervalDuration = 900;
+
+        // Atualiza a frase imediatamente
+        loadingText.innerText = getRandomPhrase();
+
+        const intervalId = setInterval(() => {
+            loadingText.innerText = getRandomPhrase();
+            // Efeito visual simples de "piscar" texto
+            loadingText.style.animation = 'none';
+            loadingText.offsetHeight; /* trigger reflow */
+            loadingText.style.animation = 'fadeText 0.5s ease-in-out';
+        }, intervalDuration);
+
+        // Finaliza após o tempo total
+        setTimeout(() => {
+            clearInterval(intervalId);
+            loadingDiv.style.display = 'none';
+            btn.disabled = false;
+            btn.innerText = "Analisar Trouxice";
+            mostrarResultado(name);
+        }, totalDuration);
+    }
+
+    function getRandomPhrase() {
+        return loadingPhrases[Math.floor(Math.random() * loadingPhrases.length)];
+    }
+
+    function mostrarResultado(name) {
         const resultDiv = document.getElementById('result');
         
-        if (name === "") {
-            alert("Não seja trouxa de deixar o nome em branco!");
-            return;
-        }
-
-        // 1. Cálculo Base (Nome)
+        // Cálculo (Mesma lógica de antes)
         let sum = 0;
-        for (let i = 0; i < name.length; i++) {
-            sum += name.toLowerCase().charCodeAt(i);
-        }
-        let baseScore = (sum % 80); // Base vai até 79 para deixar espaço para o bônus da tarde
+        for (let i = 0; i < name.length; i++) { sum += name.toLowerCase().charCodeAt(i); }
+        let score = (sum % 85); 
 
-        // 2. Fator Horário (A Lógica da Tarde)
-        const agora = new Date();
-        const hora = agora.getHours();
-        let bonusVespertino = 0;
-        let timeMessage = "🌞 De manhã você é forte.";
-
-        // Se for depois do meio-dia (12h) e antes das 5 da manhã
-        if (hora >= 12 || hora < 5) {
-            // Adiciona entre 10% e 30% de trouxice dependendo de quão tarde é
-            bonusVespertino = 20 + (hora % 5); 
-            timeMessage = "🌚 O Sol caiu, a dignidade também.";
-            
-            if (hora >= 22 || hora <= 4) {
-                bonusVespertino += 15; // Madrugada da Saudade
-                timeMessage = "🦇 Madrugada: horário nobre dos trouxas.";
-            }
-        }
-
-        let totalScore = baseScore + bonusVespertino;
+        // Penalidade de horário
+        let bonus = 0;
+        let timeMsg = "";
         
-        // Trava em 100% (ou estoura para 110% se for crítico)
-        if (totalScore > 100) totalScore = 100; // Trouxa supremo
-
-        // Mensagens
-        let message = "";
-        if (totalScore < 30) {
-            message = "Você está lúcido(a). Parabéns!";
-        } else if (totalScore < 60) {
-            message = "Nível médio. Cuidado com playlists tristes.";
-        } else if (totalScore < 90) {
-            message = "Perigo! Afaste-se do celular agora.";
-        } else {
-            message = "CORRA! Você está prestes a voltar com o ex.";
+        if (currentHour >= 12 && currentHour < 18) {
+            bonus = 15;
+            timeMsg = "(+15% Multa Vespertina)";
+        } else if (currentHour >= 18 || currentHour < 6) {
+            bonus = 30;
+            timeMsg = "(+30% Adicional Noturno de Carência)";
         }
 
-        // Exibir
+        let total = score + bonus;
+        if (total > 100) total = 100;
+
+        // Mensagens finais
+        let msg = "";
+        if (total < 40) msg = "Até que você se valoriza. Parabéns!";
+        else if (total < 70) msg = "Nível Padrão. Cai no papinho, mas sobrevive.";
+        else if (total < 90) msg = "Alerta Vermelho! Largue o celular agora!";
+        else msg = "TROUXA SUPREMO. Você já comprou o presente de namoro sem namorar?";
+
         resultDiv.style.display = "block";
-        resultDiv.style.backgroundColor = totalScore > 80 ? "#ffcdd2" : "#e8f5e9";
-        
         resultDiv.innerHTML = `
-            <span class="percentage">${totalScore}%</span>
-            <span class="details">Base: ${baseScore}% + Adicional de Horário: ${bonusVespertino}%</span>
-            <div style="margin-top:5px; font-size:0.8em; color:#666">(${timeMessage})</div>
-            <span class="message">${message}</span>
+            <span class="percentage">${total}%</span>
+            <span class="message">${msg}</span>
+            <div style="font-size:0.8em; margin-top:10px; opacity:0.7">
+                ${timeMsg}
+            </div>
         `;
     }
 </script>
