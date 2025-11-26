@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trouxômetro - Edição Céu Estrelado</title>
+    <title>Trouxômetro - Edição Diagnóstico Clínico</title>
     <style>
         :root {
             --container-bg: rgba(255, 255, 255, 0.95);
@@ -28,18 +28,14 @@
             --text-color: #6d214f;
         }
 
-        /* TEMA NOITE (Céu Estrelado Limpo) */
+        /* TEMA NOITE (Céu Estrelado) */
         body.night {
             background-color: #0f0c29;
-            /* Camadas de estrelas e gradiente do céu */
             background-image: 
                 radial-gradient(circle at 50% 80%, rgba(255, 230, 100, 0.2) 1px, transparent 2px),
                 radial-gradient(circle at 10% 85%, rgba(255, 230, 100, 0.2) 1px, transparent 2px),
                 linear-gradient(to bottom, #24243e 0%, #302b63 50%, #0f0c29 100%);
-            
             background-size: 100px 100px, 120px 120px, 100% 100%;
-            background-repeat: repeat, repeat, no-repeat;
-            background-position: 0 0, 0 0, center;
             background-attachment: fixed;
 
             --container-bg: rgba(20, 20, 35, 0.95);
@@ -106,9 +102,8 @@
             font-size: 18px; font-weight: bold; width: 100%;
             transition: all 0.2s; margin-top: 5px;
         }
-        body.night button { color: #000; box-shadow: 0 0 10px var(--accent-color); }
         button:hover { transform: translateY(-3px); filter: brightness(1.1); }
-        button:disabled { background: #95a5a6; cursor: not-allowed; transform: none; box-shadow: none; color: #eee;}
+        button:disabled { background: #95a5a6; cursor: not-allowed; transform: none; box-shadow: none; opacity: 0.7;}
 
         /* LOADING */
         #loading { display: none; margin-top: 25px; }
@@ -132,14 +127,12 @@
             overflow: hidden;
         }
 
-        /* Elementos começam invisíveis */
         .result-item {
             opacity: 0;
             transform: translateY(20px);
             transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
 
-        /* Classe para mostrar */
         .result-item.show-now {
             opacity: 1;
             transform: translateY(0);
@@ -148,14 +141,31 @@
         .percentage { font-size: 4em; font-weight: 800; color: var(--accent-color); line-height: 1; display: block; margin-bottom: 10px;}
         body.night .percentage { text-shadow: 0 0 15px var(--accent-color); }
 
-        .message { font-size: 1.2em; color: var(--text-color); font-weight: 600; display: block; margin-bottom: 15px; }
+        .message { font-size: 1.2em; color: var(--text-color); display: block; margin-bottom: 15px; }
+        .message strong { color: var(--accent-color); }
         
-        .time-bonus {
-            font-size: 0.9em; color: var(--text-color); opacity: 0.8;
-            background: rgba(0,0,0,0.1); padding: 8px 15px; border-radius: 20px;
-            display: inline-block;
+        /* NOVO: Estilo da Lista de Motivos */
+        .reasons-list {
+            text-align: left;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px 15px 15px 35px;
+            border-radius: 10px;
+            margin-top: 15px;
+            margin-bottom: 15px;
+            font-size: 0.95em;
+            color: var(--text-color);
+            line-height: 1.5;
+            display: none; /* Começa invisível */
         }
-        body.night .time-bonus { background: rgba(255,255,255,0.15); color: var(--secondary-color); }
+        .reasons-list li { margin-bottom: 8px; }
+        body.night .reasons-list { background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); }
+
+        .time-bonus {
+            font-size: 0.8em; color: var(--text-color); opacity: 0.7;
+            background: rgba(0,0,0,0.05); padding: 5px 15px; border-radius: 20px;
+            display: inline-block; margin-top: 10px;
+        }
+        body.night .time-bonus { background: rgba(255,255,255,0.1); }
 
         @keyframes spin { 100% { transform: rotate(360deg); } }
         @keyframes fadeText { 0% { opacity: 0; } 100% { opacity: 1; } }
@@ -168,7 +178,7 @@
     <div id="themeIndicator" class="theme-badge">...</div>
     
     <input type="text" id="nameInput" placeholder="Nome do(a) iludido(a)..." autocomplete="off">
-    <button id="btnCalc" onclick="iniciarProcessamento()">Calcular Nível</button>
+    <button id="btnCalc" onclick="iniciarProcessamento()">Calcular Diagnóstico</button>
     
     <div id="loading">
         <div class="spinner"></div>
@@ -179,11 +189,9 @@
 </div>
 
 <script>
-    // ========= 1. TEMA =========
+    // ========= 1. TEMA (Lógica Mantida) =========
     let currentHour = new Date().getHours();
-    
-    // Se quiser forçar o modo noite para testar o fundo, descomente a linha abaixo:
-    // currentHour = 22; 
+    // currentHour = 20; // Descomente para testar o modo noite
 
     function setDynamicTheme() {
         const body = document.body;
@@ -202,8 +210,8 @@
     }
     setDynamicTheme();
 
-    // ========= 2. FRASES =========
-    const phrases = [
+    // ========= 2. FRASES DE LOADING =========
+    const loadingPhrases = [
         "Acessando histórico de humilhação...",
         "Calculando quantas vezes você foi feito de palhaço...",
         "Verificando se você curtiu foto antiga do ex...",
@@ -213,16 +221,67 @@
         "Chamando o VAR da ilusão..."
     ];
 
-    // ========= 3. PROCESSAMENTO =========
+    // ========= 3. BANCO DE DADOS DE DIAGNÓSTICOS (NOVO) =========
+    const diagnosticosDB = {
+        nivel1: { // 0 a 29%
+            titulo: "Escudo de Vibranium",
+            sintomas: [
+                "Você visualiza e não responde (por querer).",
+                "Seu coração é uma pedra de gelo revestida de Teflon.",
+                "Desconfia até quando a avó diz 'eu te amo'.",
+                "Tem planilha no Excel para avaliar os 'crushes'.",
+                "Bloqueia antes de se apegar.",
+                "Considera 'Bom dia' como pedido de casamento e foge."
+            ]
+        },
+        nivel2: { // 30 a 59%
+            titulo: "Iludido(a) Recreativo(a)",
+            sintomas: [
+                "Já stalkeou o ex do atual (e o atual do ex) hoje.",
+                "Acredita na frase lendária: 'não é você, sou eu'.",
+                "Responde em 3 segundos quem demorou 6 horas.",
+                "Cria fanfic na cabeça antes do primeiro encontro.",
+                "Posta indireta nos stories esperando UMA visualização específica.",
+                "Acha que curtir story é pedido de namoro."
+            ]
+        },
+        nivel3: { // 60 a 85%
+            titulo: "Membro VIP do Cirque du Soleil",
+            sintomas: [
+                "Pede Uber para o 'date' ir embora (e você paga).",
+                "Acredita piamente que 'ele(a) vai mudar por mim'.",
+                "Tem uma playlist chamada 'Depressão Domingo à Noite'.",
+                "Já perdoou a mesma vacilada 3 vezes (na mesma semana).",
+                "Manda print da conversa para 5 grupos pedindo análise semântica.",
+                "Chora ouvindo Marília Mendonça mesmo estando solteiro(a)."
+            ]
+        },
+        nivel4: { // 86 a 100%
+            titulo: "Patrimônio Histórico da Ilusão",
+            sintomas: [
+                "Tatuou o nome da pessoa com 2 semanas de namoro.",
+                "Já planejou o casamento enquanto a pessoa nem sabia seu sobrenome.",
+                "Emprestou o cartão de crédito (e o nome ficou sujo).",
+                "Acha que ciúme possessivo é 'prova de amor'.",
+                "Vendeu o carro para pagar a dívida do 'amor da vida'.",
+                "Fez promessa para santo para o ex voltar."
+            ]
+        }
+    };
+
+    function getMotivosAleatorios(lista) {
+        // Mistura a lista e pega os 3 primeiros
+        const embaralhado = lista.sort(() => 0.5 - Math.random());
+        return embaralhado.slice(0, 3);
+    }
+
+    // ========= 4. PROCESSAMENTO PRINCIPAL =========
     function iniciarProcessamento() {
         const nameInput = document.getElementById('nameInput');
         const name = nameInput.value.trim();
-        if (!name) { 
-            alert("Digite o nome!");
-            return; 
-        }
+        if (!name) { alert("Digite o nome!"); return; }
 
-        // Limpa
+        // Reset
         document.getElementById('result').innerHTML = '';
         document.getElementById('result').style.display = 'none';
 
@@ -234,16 +293,16 @@
         btn.disabled = true;
         btn.innerHTML = "Analisando...";
 
-        // Roda frases por 4.5 segundos
+        // Animação das frases de loading
         let counter = 0;
-        loadingText.innerText = phrases[Math.floor(Math.random() * phrases.length)];
+        loadingText.innerText = loadingPhrases[Math.floor(Math.random() * loadingPhrases.length)];
         
         const interval = setInterval(() => {
-            loadingText.innerText = phrases[Math.floor(Math.random() * phrases.length)];
+            loadingText.innerText = loadingPhrases[Math.floor(Math.random() * loadingPhrases.length)];
             loadingText.style.opacity = 0.5;
             setTimeout(() => { loadingText.style.opacity = 1; }, 200);
             counter++;
-        }, 1100);
+        }, 1200);
 
         setTimeout(() => {
             clearInterval(interval);
@@ -251,20 +310,22 @@
             btn.disabled = false;
             btn.innerText = "Calcular Novamente";
             prepararResultado(name);
-        }, 4500);
+        }, 4000);
     }
 
-    // ========= 4. CÁLCULO E HTML =========
-    let percentageElement, messageElement, bonusElement;
+    // ========= 5. GERAÇÃO DO RESULTADO =========
+    let percentageElement, messageElement, bonusElement, listElement;
 
     function prepararResultado(name) {
         const resultDiv = document.getElementById('result');
         
+        // Algoritmo de soma de caracteres
         let sum = 0;
         for (let i = 0; i < name.length; i++) { sum += name.toLowerCase().charCodeAt(i); }
         let score = (sum % 80); 
 
-        let bonus = 0; let timeText = "Horário Seguro";
+        // Bônus de horário
+        let bonus = 0; let timeText = "Horário Seguro (Sem bônus)";
         if (currentHour >= 12 && currentHour < 18) {
             bonus = 15; timeText = "Multa da Tarde (+15%)";
         } else if (currentHour >= 18 || currentHour < 6) {
@@ -274,45 +335,56 @@
         let total = score + bonus;
         if (total > 100) total = 100;
 
-        let msg = "";
-        if (total < 30) msg = "Você é vacinado(a).";
-        else if (total < 60) msg = "Nível Padrão. Sofre, mas vive.";
-        else if (total < 85) msg = "Cuidado! Risco de recaída.";
-        else msg = "🚨 ALERTA MÁXIMO: Bloqueie o celular!";
+        // Seleção do nível
+        let diagData;
+        if (total < 30) diagData = diagnosticosDB.nivel1;
+        else if (total < 60) diagData = diagnosticosDB.nivel2;
+        else if (total < 85) diagData = diagnosticosDB.nivel3;
+        else diagData = diagnosticosDB.nivel4;
 
-        // Insere o HTML (invisível no inicio)
+        // Seleção dos motivos
+        const motivosSelecionados = getMotivosAleatorios([...diagData.sintomas]); // Copia array para não alterar original
+        
+        let listaHTML = `<ul class="reasons-list result-item">`;
+        motivosSelecionados.forEach(m => listaHTML += `<li>${m}</li>`);
+        listaHTML += `</ul>`;
+
+        // Inserção no DOM
         resultDiv.innerHTML = `
             <div class="percentage result-item">${total}%</div>
-            <div class="message result-item">${msg}</div>
+            <div class="message result-item">Diagnóstico: <strong>${diagData.titulo}</strong></div>
+            ${listaHTML}
             <div class="time-bonus result-item">${timeText}</div>
         `;
         resultDiv.style.display = "block";
 
-        // Seleciona os elementos AGORA que eles existem
+        // Seleciona elementos para animação
         percentageElement = resultDiv.querySelector('.percentage');
         messageElement = resultDiv.querySelector('.message');
+        listElement = resultDiv.querySelector('.reasons-list');
         bonusElement = resultDiv.querySelector('.time-bonus');
 
-        // Chama a animação
         revelarResultadoLentamente();
     }
 
-    // ========= 5. ANIMAÇÃO DE REVELAÇÃO =========
+    // ========= 6. ANIMAÇÃO FINAL =========
     function revelarResultadoLentamente() {
         // 1. Porcentagem
-        setTimeout(() => {
-            if(percentageElement) percentageElement.classList.add('show-now');
-        }, 100);
+        setTimeout(() => { if(percentageElement) percentageElement.classList.add('show-now'); }, 100);
 
-        // 2. Frase (1.5s depois)
-        setTimeout(() => {
-            if(messageElement) messageElement.classList.add('show-now');
-        }, 1500);
+        // 2. Diagnóstico
+        setTimeout(() => { if(messageElement) messageElement.classList.add('show-now'); }, 800);
 
-        // 3. Bônus (2.5s depois)
-        setTimeout(() => {
-            if(bonusElement) bonusElement.classList.add('show-now');
-        }, 2500);
+        // 3. Lista de Motivos (Fade In Suave)
+        setTimeout(() => { 
+            if(listElement) {
+                listElement.style.display = 'block';
+                setTimeout(() => listElement.classList.add('show-now'), 50);
+            }
+        }, 1600);
+
+        // 4. Bônus
+        setTimeout(() => { if(bonusElement) bonusElement.classList.add('show-now'); }, 2800);
     }
 </script>
 
