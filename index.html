@@ -3,71 +3,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trouxômetro Visual 4.0</title>
+    <title>Trouxômetro Final Edition</title>
     <style>
         :root {
-            --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             --container-bg: rgba(255, 255, 255, 0.95);
             --text-color: #333;
             --accent-color: #2980b9;
             --secondary-color: #7f8c8d;
-            --shadow-color: rgba(0,0,0,0.1);
             --input-bg: #fff;
             --input-border: #ddd;
+            --result-bg: rgba(0,0,0,0.05);
         }
 
-        /* TEMA MANHÃ (Azul/Clean) */
+        /* TEMA MANHÃ (Céu limpo) */
         body.morning {
-            --bg-gradient: linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%);
+            background: linear-gradient(120deg, #89f7fe 0%, #66a6ff 100%);
             --accent-color: #0984e3;
-            --text-color: #2d3436;
-            --container-bg: rgba(255, 255, 255, 0.9);
         }
 
-        /* TEMA TARDE (Laranja/Pôr do Sol) */
+        /* TEMA TARDE (Pôr do Sol intenso) */
         body.afternoon {
-            --bg-gradient: linear-gradient(to top, #fff1eb 0%, #ace0f9 100%); 
-            --bg-gradient: linear-gradient(45deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%);
+            background: linear-gradient(45deg, #ff9a9e 0%, #fad0c4 99%, #fecfef 100%);
             --accent-color: #e84393;
-            --text-color: #6c5ce7;
+            --text-color: #6d214f;
         }
 
-        /* TEMA NOITE (Neon/Cyberpunk - AJUSTADO PARA MELHOR LEITURA) */
+        /* TEMA NOITE (Vibe Cidade Densa/Osasco Night) */
         body.night {
-            /* Fundo Roxo Profundo -> Azul Meia-Noite (Melhor que preto puro) */
-            --bg-gradient: linear-gradient(to bottom, #0f0c29, #302b63, #24243e);
-            --container-bg: rgba(20, 20, 35, 0.85); /* Translúcido escuro */
+            /* Fundo complexo para simular cidade à noite */
+            background-color: #0f0c29;
+            background-image: 
+                /* Luzes distantes (pontos amarelos) */
+                radial-gradient(circle at 50% 80%, rgba(255, 230, 100, 0.2) 1px, transparent 2px),
+                radial-gradient(circle at 10% 85%, rgba(255, 230, 100, 0.2) 1px, transparent 2px),
+                radial-gradient(circle at 90% 85%, rgba(255, 230, 100, 0.2) 1px, transparent 2px),
+                /* Silhueta de prédios densos (padrão de repetição na parte inferior) */
+                repeating-linear-gradient(90deg, #000 0px, #000 15px, transparent 15px, transparent 30px, #111 30px, #111 50px, transparent 50px, transparent 55px),
+                /* O céu noturno gradiente */
+                linear-gradient(to bottom, #24243e 0%, #302b63 50%, #0f0c29 100%);
+            
+            background-size: 100px 100px, 120px 120px, 80px 80px, 100% 30%, 100% 100%;
+            background-repeat: repeat, repeat, repeat, repeat-x, no-repeat;
+            background-position: 0 0, 0 0, 0 0, bottom, center;
+            background-attachment: fixed;
+
+            --container-bg: rgba(20, 20, 35, 0.9); /* Mais escuro e opaco */
             --text-color: #ecf0f1;
-            --accent-color: #00d2d3; /* Ciano Neon (Brilha no escuro) */
-            --secondary-color: #ff9ff3; /* Rosa Neon secundário */
-            --shadow-color: rgba(0,0,0,0.6);
-            --input-bg: rgba(255, 255, 255, 0.1); /* Input transparente */
+            --accent-color: #00d2d3; /* Ciano Neon */
+            --secondary-color: #ff79cb; /* Rosa Neon */
+            --input-bg: rgba(255, 255, 255, 0.1);
             --input-border: #485460;
+            --result-bg: rgba(0,0,0,0.3);
         }
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: var(--bg-gradient);
-            background-size: 400% 400%; /* Para animação suave se quiser */
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
-            transition: background 1s ease;
+            transition: background 0.5s ease;
         }
 
         .container {
             background: var(--container-bg);
             padding: 2.5rem;
             border-radius: 20px;
-            box-shadow: 0 15px 35px var(--shadow-color);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
             text-align: center;
             max-width: 450px;
             width: 90%;
-            transition: all 0.5s ease;
-            backdrop-filter: blur(10px); /* Efeito de vidro */
+            backdrop-filter: blur(5px);
             border: 1px solid rgba(255,255,255,0.1);
+            z-index: 10;
         }
 
         h1 { 
@@ -75,6 +84,7 @@
             margin-bottom: 5px;
             text-transform: uppercase;
             letter-spacing: 1px;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
 
         .theme-badge { 
@@ -86,115 +96,75 @@
             display: inline-block;
             margin-bottom: 20px;
             font-weight: bold;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
         }
-        
-        /* Ajuste específico para texto do badge no modo noite para garantir leitura */
-        body.night .theme-badge {
-            color: #000; /* Texto preto no fundo Ciano neon */
-        }
+        body.night .theme-badge { color: #000; box-shadow: 0 0 10px var(--accent-color); }
 
         input {
-            width: 100%;
-            padding: 15px;
-            margin: 15px 0;
-            background: var(--input-bg);
-            border: 2px solid var(--input-border);
-            border-radius: 12px;
-            box-sizing: border-box;
-            font-size: 16px;
-            outline: none;
-            color: var(--text-color);
-            transition: 0.3s;
+            width: 100%; padding: 15px; margin: 15px 0;
+            background: var(--input-bg); border: 2px solid var(--input-border);
+            border-radius: 12px; box-sizing: border-box; font-size: 16px; outline: none;
+            color: var(--text-color); transition: 0.3s;
         }
-        
-        input:focus {
-            border-color: var(--accent-color);
-            box-shadow: 0 0 8px var(--accent-color);
-        }
+        input:focus { border-color: var(--accent-color); box-shadow: 0 0 8px var(--accent-color); }
 
-        /* Placeholder visível no modo noite */
-        body.night input::placeholder { color: rgba(255,255,255,0.5); }
-        
         button {
-            background: var(--accent-color);
-            color: #fff; /* Texto branco padrão */
-            border: none;
-            padding: 15px 25px;
-            border-radius: 12px;
-            cursor: pointer;
-            font-size: 18px;
-            font-weight: bold;
-            width: 100%;
-            transition: transform 0.2s, box-shadow 0.2s;
-            margin-top: 5px;
+            background: var(--accent-color); color: #fff; border: none;
+            padding: 15px 25px; border-radius: 12px; cursor: pointer;
+            font-size: 18px; font-weight: bold; width: 100%;
+            transition: all 0.2s; margin-top: 5px;
         }
-        
-        /* Ajuste do botão no modo noite */
-        body.night button {
-            color: #000; /* Texto preto para contraste com o Ciano */
-            box-shadow: 0 0 15px rgba(0, 210, 211, 0.4); /* Glow */
-        }
+        body.night button { color: #000; box-shadow: 0 0 10px var(--accent-color); }
+        button:hover { transform: translateY(-3px); filter: brightness(1.1); }
+        button:disabled { background: #95a5a6; cursor: not-allowed; transform: none; box-shadow: none; color: #eee;}
 
-        button:hover { transform: translateY(-2px); }
-        button:disabled { background: #95a5a6; cursor: not-allowed; transform: none; box-shadow: none; color: white;}
-
-        /* LOADING */
+        /* LOADING AREA */
         #loading { display: none; margin-top: 25px; }
         .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid rgba(255,255,255,0.1);
-            border-left-color: var(--accent-color);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 15px auto;
+            width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.1);
+            border-left-color: var(--accent-color); border-radius: 50%;
+            animation: spin 1s linear infinite; margin: 0 auto 15px auto;
         }
         .loading-text {
-            color: var(--text-color);
-            font-style: italic;
-            font-size: 1em;
-            opacity: 0.8;
+            color: var(--text-color); font-style: italic; font-size: 1em;
+            opacity: 0.8; min-height: 1.2em;
             animation: fadeText 0.5s ease-in-out;
         }
 
-        /* RESULT */
+        /* RESULT AREA & SLOW ANIMATIONS */
         #result {
-            margin-top: 25px;
-            padding: 20px;
-            border-radius: 12px;
-            display: none;
-            background: rgba(0,0,0,0.05);
+            margin-top: 25px; padding: 20px; border-radius: 12px;
+            display: none; /* Escondido inicialmente */
+            background: var(--result-bg);
             border: 2px dashed var(--accent-color);
-            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        
-        body.night #result {
-            background: rgba(255,255,255,0.05); /* Fundo sutil no dark mode */
+            overflow: hidden;
         }
 
-        .percentage { font-size: 3.5em; font-weight: 800; color: var(--accent-color); display: block; line-height: 1.1;}
-        
-        /* No modo noite, se a porcentagem for Ciano, o texto deve ser claro */
-        body.night .percentage { text-shadow: 0 0 10px rgba(0,210,211,0.5); }
+        /* Os elementos do resultado começam invisíveis */
+        .result-item {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
 
-        .message { font-size: 1.1em; color: var(--text-color); margin-top: 15px; display: block; font-weight: 500; }
+        /* Quando a classe 'show-now' é adicionada pelo JS, eles aparecem */
+        .result-item.show-now {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .percentage { font-size: 4em; font-weight: 800; color: var(--accent-color); line-height: 1; display: block; margin-bottom: 10px;}
+        body.night .percentage { text-shadow: 0 0 15px var(--accent-color); }
+
+        .message { font-size: 1.2em; color: var(--text-color); font-weight: 600; display: block; margin-bottom: 15px; }
         
         .time-bonus {
-            font-size: 0.85em; 
-            margin-top: 10px; 
-            color: var(--text-color); 
-            opacity: 0.7;
-            background: rgba(0,0,0,0.05);
-            padding: 5px;
-            border-radius: 5px;
+            font-size: 0.9em; color: var(--text-color); opacity: 0.8;
+            background: rgba(0,0,0,0.1); padding: 8px 15px; border-radius: 20px;
             display: inline-block;
         }
-        
-        body.night .time-bonus { background: rgba(255,255,255,0.1); color: var(--secondary-color); }
+        body.night .time-bonus { background: rgba(255,255,255,0.15); color: var(--secondary-color); }
 
         @keyframes spin { 100% { transform: rotate(360deg); } }
-        @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
         @keyframes fadeText { 0% { opacity: 0; } 100% { opacity: 1; } }
     </style>
 </head>
@@ -205,7 +175,7 @@
     <div id="themeIndicator" class="theme-badge">...</div>
     
     <input type="text" id="nameInput" placeholder="Nome do(a) iludido(a)..." autocomplete="off">
-    <button id="btnCalc" onclick="iniciarProcessamento()">Analisar Nível</button>
+    <button id="btnCalc" onclick="iniciarProcessamento()">Calcular Nível</button>
     
     <div id="loading">
         <div class="spinner"></div>
@@ -216,121 +186,113 @@
 </div>
 
 <script>
-    // ========= 1. LÓGICA DE TEMA (Auto-detect) =========
+    // ========= 1. TEMA (Auto-detect com "Vibe Osasco") =========
     let currentHour = new Date().getHours();
-    
-    // Para testar o modo noite manualmente, descomente a linha abaixo:
-    // currentHour = 20; 
+    // currentHour = 22; // Descomente para testar o modo noite
 
     function setDynamicTheme() {
         const body = document.body;
         const badge = document.getElementById('themeIndicator');
         let mode = "";
-        
-        // Limpa classes
         body.classList.remove('morning', 'afternoon', 'night');
 
         if (currentHour >= 6 && currentHour < 12) {
-            body.classList.add('morning');
-            mode = "☀️ MANHÃ: TROUXA RACIONAL";
+            body.classList.add('morning'); mode = "☀️ MANHÃ: Racional";
         } else if (currentHour >= 12 && currentHour < 18) {
-            body.classList.add('afternoon');
-            mode = "🌤️ TARDE: TROUXA EMOCIONAL";
+            body.classList.add('afternoon'); mode = "🌤️ TARDE: Emocionado";
         } else {
-            body.classList.add('night');
-            mode = "🌙 NOITE: TROUXA DE RISCO";
+            body.classList.add('night'); mode = "🌃 NOITE: Vibe Urbana Caótica";
         }
         badge.innerText = mode;
     }
     setDynamicTheme();
 
-    // ========= 2. FRASES ALEATÓRIAS =========
+    // ========= 2. FRASES DE CARREGAMENTO =========
     const phrases = [
-        "Acessando histórico de 'visualizado e não respondido'...",
-        "Calculando o tempo gasto vendo fotos antigas...",
-        "Verificando compatibilidade astrológica duvidosa...",
-        "Analisando prints enviados para o grupo de amigos...",
+        "Analisando histórico de 'visualizado'...",
+        "Calculando o tamanho da humilhação...",
+        "Verificando se você curtiu foto antiga do ex...",
         "Medindo a profundidade do poço...",
         "Consultando o SPC (Sistema de Paixão e Carência)...",
-        "Detectando indiretas postadas nos Stories...",
-        "Verificando playlist 'Sofreência 2024'..."
+        "Detectando indiretas nos Stories...",
+        "Passando o pano para as suas atitudes...",
+        "Chamando o VAR da ilusão..."
     ];
 
     // ========= 3. PROCESSAMENTO =========
     function iniciarProcessamento() {
-        const name = document.getElementById('nameInput').value.trim();
-        if (!name) { alert("Digite um nome, não se faça de difícil!"); return; }
+        const nameInput = document.getElementById('nameInput');
+        const name = nameInput.value.trim();
+        if (!name) { 
+            nameInput.placeholder = "DIGITE UM NOME!!!";
+            nameInput.style.borderColor = "red";
+            setTimeout(() => { nameInput.style.borderColor = ""; }, 1000);
+            return; 
+        }
 
+        // Limpa resultado anterior
+        document.getElementById('result').innerHTML = '';
         document.getElementById('result').style.display = 'none';
+
         const loadingDiv = document.getElementById('loading');
         const btn = document.getElementById('btnCalc');
         const loadingText = document.getElementById('loadingMessage');
         
         loadingDiv.style.display = 'block';
         btn.disabled = true;
-        btn.innerHTML = "Calculando..."; // InnerHTML para mudar texto
+        btn.innerHTML = "Analisando...";
 
-        // Loop de frases
+        // Troca frases durante 5 segundos
+        let counter = 0;
         loadingText.innerText = phrases[Math.floor(Math.random() * phrases.length)];
         
         const interval = setInterval(() => {
             loadingText.innerText = phrases[Math.floor(Math.random() * phrases.length)];
-            loadingText.style.animation = 'none';
-            loadingText.offsetHeight; 
-            loadingText.style.animation = 'fadeText 0.5s ease-in-out';
-        }, 1000);
+            // Efeito visual de "piscar" o texto
+            loadingText.style.opacity = 0.5;
+            setTimeout(() => { loadingText.style.opacity = 1; }, 200);
+            counter++;
+        }, 1200);
 
-        // Termina após 4 segundos
+        // Termina após 6 segundos (tempo suficiente para ler as frases de loading)
         setTimeout(() => {
             clearInterval(interval);
             loadingDiv.style.display = 'none';
             btn.disabled = false;
-            btn.innerText = "Analisar Nível";
-            mostrarResultado(name);
-        }, 4000);
+            btn.innerText = "Calcular Novamente";
+            prepararResultado(name);
+        }, 6000);
     }
 
-    // ========= 4. CÁLCULO E RESULTADO =========
-    function mostrarResultado(name) {
+    // ========= 4. CÁLCULO E PREPARAÇÃO =========
+    let percentageElement, messageElement, bonusElement;
+
+    function prepararResultado(name) {
         const resultDiv = document.getElementById('result');
         
-        // Algoritmo do Nome
+        // Cálculo Base
         let sum = 0;
         for (let i = 0; i < name.length; i++) { sum += name.toLowerCase().charCodeAt(i); }
-        let score = (sum % 80); // Base até 79%
+        let score = (sum % 80); 
 
-        // Penalidade de Horário
-        let bonus = 0;
-        let timeText = "";
-
+        // Cálculo Bônus Horário
+        let bonus = 0; let timeText = "Horário Seguro (Sem bônus)";
         if (currentHour >= 12 && currentHour < 18) {
-            bonus = 15;
-            timeText = "Multa da Tarde (+15%)";
+            bonus = 15; timeText = "Multa da Tarde (+15%)";
         } else if (currentHour >= 18 || currentHour < 6) {
-            bonus = 30; // Madrugada é fatal
-            timeText = "Adicional Noturno de Carência (+30%)";
+            bonus = 30; timeText = "Adicional Noturno de Carência (+30%)";
         }
 
         let total = score + bonus;
         if (total > 100) total = 100;
-        if (total > 100 && name.toLowerCase().includes("ex")) total = 110; // Easter egg
 
-        // Mensagens
+        // Mensagens Finais
         let msg = "";
-        if (total < 20) msg = "Imune. Você provavelmente não tem coração.";
-        else if (total < 50) msg = "Nível aceitável. Sofre, mas mantém a postura.";
-        else if (total < 80) msg = "Cuidado. Você está a um passo de mandar 'oi sumida'.";
-        else msg = "🚨 ALERTA MÁXIMO 🚨 Bloqueie o celular ou você vai fazer besteira!";
+        if (total < 30) msg = "Você é vacinado(a). O golpe tá aí, mas você não cai.";
+        else if (total < 60) msg = "Nível Padrão. Sofre, chora, mas segue a vida.";
+        else if (total < 85) msg = "Cuidado! Você está a um passo de voltar com o ex.";
+        else msg = "🚨 ALERTA MÁXIMO: Tutela Obrigatória. Você não pode tomar decisões sozinho(a).";
 
-        // Renderiza
-        resultDiv.style.display = "block";
+        // Monta o HTML com as classes ocultas (result-item)
         resultDiv.innerHTML = `
-            <span class="percentage">${total}%</span>
-            <span class="message">${msg}</span>
-            <div class="time-bonus">${timeText}</div>
-        `;
-    }
-</script>
-
-</body>
-</html>
+            <div class="percentage
