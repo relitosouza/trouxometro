@@ -3,44 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trouxômetro Pro 3.0</title>
+    <title>Trouxômetro Visual 4.0</title>
     <style>
         :root {
             --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             --container-bg: rgba(255, 255, 255, 0.95);
             --text-color: #333;
             --accent-color: #2980b9;
+            --secondary-color: #7f8c8d;
             --shadow-color: rgba(0,0,0,0.1);
+            --input-bg: #fff;
+            --input-border: #ddd;
         }
 
-        /* TEMA MANHÃ */
+        /* TEMA MANHÃ (Azul/Clean) */
         body.morning {
-            --bg-gradient: linear-gradient(120deg, #89f7fe 0%, #66a6ff 100%);
-            --accent-color: #0056b3;
-            --text-color: #2c3e50;
+            --bg-gradient: linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%);
+            --accent-color: #0984e3;
+            --text-color: #2d3436;
+            --container-bg: rgba(255, 255, 255, 0.9);
         }
 
-        /* TEMA TARDE */
+        /* TEMA TARDE (Laranja/Pôr do Sol) */
         body.afternoon {
-            --bg-gradient: linear-gradient(45deg, #ff9a9e 0%, #fad0c4 99%, #fad0c4 100%);
-            --accent-color: #e17055;
-            --text-color: #6d214f;
+            --bg-gradient: linear-gradient(to top, #fff1eb 0%, #ace0f9 100%); 
+            --bg-gradient: linear-gradient(45deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%);
+            --accent-color: #e84393;
+            --text-color: #6c5ce7;
         }
 
-        /* TEMA NOITE */
+        /* TEMA NOITE (Neon/Cyberpunk - AJUSTADO PARA MELHOR LEITURA) */
         body.night {
-            --bg-gradient: linear-gradient(109.6deg, rgb(36, 45, 57) 11.2%, rgb(16, 37, 60) 51.2%, rgb(0, 0, 0) 98.6%);
-            --container-bg: rgba(30, 30, 40, 0.95);
+            /* Fundo Roxo Profundo -> Azul Meia-Noite (Melhor que preto puro) */
+            --bg-gradient: linear-gradient(to bottom, #0f0c29, #302b63, #24243e);
+            --container-bg: rgba(20, 20, 35, 0.85); /* Translúcido escuro */
             --text-color: #ecf0f1;
-            --accent-color: #d63031;
-            --shadow-color: rgba(0,0,0,0.5);
+            --accent-color: #00d2d3; /* Ciano Neon (Brilha no escuro) */
+            --secondary-color: #ff9ff3; /* Rosa Neon secundário */
+            --shadow-color: rgba(0,0,0,0.6);
+            --input-bg: rgba(255, 255, 255, 0.1); /* Input transparente */
+            --input-border: #485460;
         }
-        
-        body.night input { background-color: #2c3e50; color: white; border-color: #444; }
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: var(--bg-gradient);
+            background-size: 400% 400%; /* Para animação suave se quiser */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -58,55 +66,85 @@
             max-width: 450px;
             width: 90%;
             transition: all 0.5s ease;
+            backdrop-filter: blur(10px); /* Efeito de vidro */
+            border: 1px solid rgba(255,255,255,0.1);
         }
 
-        h1 { color: var(--accent-color); margin-bottom: 5px; }
+        h1 { 
+            color: var(--accent-color); 
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
         .theme-badge { 
-            font-size: 0.8em; 
+            font-size: 0.75em; 
             background: var(--accent-color); 
-            color: white; 
-            padding: 5px 10px; 
+            color: #fff;
+            padding: 4px 12px; 
             border-radius: 20px; 
             display: inline-block;
             margin-bottom: 20px;
-            opacity: 0.8;
+            font-weight: bold;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        
+        /* Ajuste específico para texto do badge no modo noite para garantir leitura */
+        body.night .theme-badge {
+            color: #000; /* Texto preto no fundo Ciano neon */
         }
 
         input {
             width: 100%;
             padding: 15px;
             margin: 15px 0;
-            border: 2px solid #ddd;
-            border-radius: 10px;
+            background: var(--input-bg);
+            border: 2px solid var(--input-border);
+            border-radius: 12px;
             box-sizing: border-box;
             font-size: 16px;
             outline: none;
+            color: var(--text-color);
+            transition: 0.3s;
         }
+        
+        input:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 8px var(--accent-color);
+        }
+
+        /* Placeholder visível no modo noite */
+        body.night input::placeholder { color: rgba(255,255,255,0.5); }
         
         button {
             background: var(--accent-color);
-            color: white;
+            color: #fff; /* Texto branco padrão */
             border: none;
             padding: 15px 25px;
-            border-radius: 10px;
+            border-radius: 12px;
             cursor: pointer;
             font-size: 18px;
             font-weight: bold;
             width: 100%;
-            transition: transform 0.2s;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 5px;
         }
-        button:hover { transform: translateY(-3px); opacity: 0.9; }
-        button:disabled { background: #ccc; cursor: not-allowed; transform: none; }
+        
+        /* Ajuste do botão no modo noite */
+        body.night button {
+            color: #000; /* Texto preto para contraste com o Ciano */
+            box-shadow: 0 0 15px rgba(0, 210, 211, 0.4); /* Glow */
+        }
 
-        /* LOADING AREA */
-        #loading {
-            display: none;
-            margin-top: 25px;
-        }
+        button:hover { transform: translateY(-2px); }
+        button:disabled { background: #95a5a6; cursor: not-allowed; transform: none; box-shadow: none; color: white;}
+
+        /* LOADING */
+        #loading { display: none; margin-top: 25px; }
         .spinner {
             width: 40px;
             height: 40px;
-            border: 4px solid rgba(0,0,0,0.1);
+            border: 4px solid rgba(255,255,255,0.1);
             border-left-color: var(--accent-color);
             border-radius: 50%;
             animation: spin 1s linear infinite;
@@ -115,23 +153,45 @@
         .loading-text {
             color: var(--text-color);
             font-style: italic;
-            font-size: 1.1em;
-            min-height: 1.5em; /* Evita pulo de layout */
+            font-size: 1em;
+            opacity: 0.8;
             animation: fadeText 0.5s ease-in-out;
         }
 
-        /* RESULT AREA */
+        /* RESULT */
         #result {
             margin-top: 25px;
             padding: 20px;
             border-radius: 12px;
             display: none;
-            background: rgba(255,255,255,0.1);
+            background: rgba(0,0,0,0.05);
             border: 2px dashed var(--accent-color);
             animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        .percentage { font-size: 3.5em; font-weight: 800; color: var(--accent-color); display: block; }
-        .message { font-size: 1.1em; color: var(--text-color); margin-top: 10px; display: block; }
+        
+        body.night #result {
+            background: rgba(255,255,255,0.05); /* Fundo sutil no dark mode */
+        }
+
+        .percentage { font-size: 3.5em; font-weight: 800; color: var(--accent-color); display: block; line-height: 1.1;}
+        
+        /* No modo noite, se a porcentagem for Ciano, o texto deve ser claro */
+        body.night .percentage { text-shadow: 0 0 10px rgba(0,210,211,0.5); }
+
+        .message { font-size: 1.1em; color: var(--text-color); margin-top: 15px; display: block; font-weight: 500; }
+        
+        .time-bonus {
+            font-size: 0.85em; 
+            margin-top: 10px; 
+            color: var(--text-color); 
+            opacity: 0.7;
+            background: rgba(0,0,0,0.05);
+            padding: 5px;
+            border-radius: 5px;
+            display: inline-block;
+        }
+        
+        body.night .time-bonus { background: rgba(255,255,255,0.1); color: var(--secondary-color); }
 
         @keyframes spin { 100% { transform: rotate(360deg); } }
         @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
@@ -142,10 +202,10 @@
 
 <div class="container">
     <h1>🤡 Trouxômetro</h1>
-    <div id="themeIndicator" class="theme-badge">Carregando tema...</div>
+    <div id="themeIndicator" class="theme-badge">...</div>
     
-    <input type="text" id="nameInput" placeholder="Digite o nome do ser humano...">
-    <button id="btnCalc" onclick="iniciarProcessamento()">Analisar Trouxice</button>
+    <input type="text" id="nameInput" placeholder="Nome do(a) iludido(a)..." autocomplete="off">
+    <button id="btnCalc" onclick="iniciarProcessamento()">Analisar Nível</button>
     
     <div id="loading">
         <div class="spinner"></div>
@@ -156,123 +216,118 @@
 </div>
 
 <script>
-    // 1. TEMA DINÂMICO (Mantido)
+    // ========= 1. LÓGICA DE TEMA (Auto-detect) =========
     let currentHour = new Date().getHours();
     
+    // Para testar o modo noite manualmente, descomente a linha abaixo:
+    // currentHour = 20; 
+
     function setDynamicTheme() {
         const body = document.body;
         const badge = document.getElementById('themeIndicator');
         let mode = "";
+        
+        // Limpa classes
         body.classList.remove('morning', 'afternoon', 'night');
 
         if (currentHour >= 6 && currentHour < 12) {
             body.classList.add('morning');
-            mode = "☀️ Modo Manhã: Análise Racional";
+            mode = "☀️ MANHÃ: TROUXA RACIONAL";
         } else if (currentHour >= 12 && currentHour < 18) {
             body.classList.add('afternoon');
-            mode = "🌤️ Modo Tarde: Risco Moderado";
+            mode = "🌤️ TARDE: TROUXA EMOCIONAL";
         } else {
             body.classList.add('night');
-            mode = "🌙 Modo Noite: Alta Vulnerabilidade";
+            mode = "🌙 NOITE: TROUXA DE RISCO";
         }
         badge.innerText = mode;
     }
     setDynamicTheme();
 
-    // 2. FRASES ENGRAÇADAS DE CARREGAMENTO
-    const loadingPhrases = [
-        "Consultando histórico de visualização de Stories...",
-        "Calculando quantas vezes perdoou o imperdoável...",
-        "Analisando playlists de sofrência no Spotify...",
-        "Verificando printscreen enviado para a melhor amiga...",
-        "Acessando banco de dados de 'Oi Sumida'...",
-        "Contando quantos 'não é você, sou eu' já ouviu...",
-        "Medindo nível de dignidade restante...",
-        "Chamando o VAR da ilusão..."
+    // ========= 2. FRASES ALEATÓRIAS =========
+    const phrases = [
+        "Acessando histórico de 'visualizado e não respondido'...",
+        "Calculando o tempo gasto vendo fotos antigas...",
+        "Verificando compatibilidade astrológica duvidosa...",
+        "Analisando prints enviados para o grupo de amigos...",
+        "Medindo a profundidade do poço...",
+        "Consultando o SPC (Sistema de Paixão e Carência)...",
+        "Detectando indiretas postadas nos Stories...",
+        "Verificando playlist 'Sofreência 2024'..."
     ];
 
+    // ========= 3. PROCESSAMENTO =========
     function iniciarProcessamento() {
         const name = document.getElementById('nameInput').value.trim();
-        if (!name) { alert("Digite um nome!"); return; }
+        if (!name) { alert("Digite um nome, não se faça de difícil!"); return; }
 
-        // Esconde resultado anterior e mostra loading
         document.getElementById('result').style.display = 'none';
         const loadingDiv = document.getElementById('loading');
         const btn = document.getElementById('btnCalc');
         const loadingText = document.getElementById('loadingMessage');
         
         loadingDiv.style.display = 'block';
-        btn.disabled = true; // Trava o botão
-        btn.innerText = "Processando...";
+        btn.disabled = true;
+        btn.innerHTML = "Calculando..."; // InnerHTML para mudar texto
 
-        // Ciclo de frases aleatórias
-        let counter = 0;
-        // Tempo total de espera: 4.5 segundos (5 trocas de frase de 900ms)
-        const totalDuration = 4500; 
-        const intervalDuration = 900;
-
-        // Atualiza a frase imediatamente
-        loadingText.innerText = getRandomPhrase();
-
-        const intervalId = setInterval(() => {
-            loadingText.innerText = getRandomPhrase();
-            // Efeito visual simples de "piscar" texto
+        // Loop de frases
+        loadingText.innerText = phrases[Math.floor(Math.random() * phrases.length)];
+        
+        const interval = setInterval(() => {
+            loadingText.innerText = phrases[Math.floor(Math.random() * phrases.length)];
             loadingText.style.animation = 'none';
-            loadingText.offsetHeight; /* trigger reflow */
+            loadingText.offsetHeight; 
             loadingText.style.animation = 'fadeText 0.5s ease-in-out';
-        }, intervalDuration);
+        }, 1000);
 
-        // Finaliza após o tempo total
+        // Termina após 4 segundos
         setTimeout(() => {
-            clearInterval(intervalId);
+            clearInterval(interval);
             loadingDiv.style.display = 'none';
             btn.disabled = false;
-            btn.innerText = "Analisar Trouxice";
+            btn.innerText = "Analisar Nível";
             mostrarResultado(name);
-        }, totalDuration);
+        }, 4000);
     }
 
-    function getRandomPhrase() {
-        return loadingPhrases[Math.floor(Math.random() * loadingPhrases.length)];
-    }
-
+    // ========= 4. CÁLCULO E RESULTADO =========
     function mostrarResultado(name) {
         const resultDiv = document.getElementById('result');
         
-        // Cálculo (Mesma lógica de antes)
+        // Algoritmo do Nome
         let sum = 0;
         for (let i = 0; i < name.length; i++) { sum += name.toLowerCase().charCodeAt(i); }
-        let score = (sum % 85); 
+        let score = (sum % 80); // Base até 79%
 
-        // Penalidade de horário
+        // Penalidade de Horário
         let bonus = 0;
-        let timeMsg = "";
-        
+        let timeText = "";
+
         if (currentHour >= 12 && currentHour < 18) {
             bonus = 15;
-            timeMsg = "(+15% Multa Vespertina)";
+            timeText = "Multa da Tarde (+15%)";
         } else if (currentHour >= 18 || currentHour < 6) {
-            bonus = 30;
-            timeMsg = "(+30% Adicional Noturno de Carência)";
+            bonus = 30; // Madrugada é fatal
+            timeText = "Adicional Noturno de Carência (+30%)";
         }
 
         let total = score + bonus;
         if (total > 100) total = 100;
+        if (total > 100 && name.toLowerCase().includes("ex")) total = 110; // Easter egg
 
-        // Mensagens finais
+        // Mensagens
         let msg = "";
-        if (total < 40) msg = "Até que você se valoriza. Parabéns!";
-        else if (total < 70) msg = "Nível Padrão. Cai no papinho, mas sobrevive.";
-        else if (total < 90) msg = "Alerta Vermelho! Largue o celular agora!";
-        else msg = "TROUXA SUPREMO. Você já comprou o presente de namoro sem namorar?";
+        if (total < 20) msg = "Imune. Você provavelmente não tem coração.";
+        else if (total < 50) msg = "Nível aceitável. Sofre, mas mantém a postura.";
+        else if (total < 80) msg = "Cuidado. Você está a um passo de mandar 'oi sumida'.";
+        else msg = "🚨 ALERTA MÁXIMO 🚨 Bloqueie o celular ou você vai fazer besteira!";
 
+        // Renderiza
         resultDiv.style.display = "block";
         resultDiv.innerHTML = `
             <span class="percentage">${total}%</span>
             <span class="message">${msg}</span>
-            <div style="font-size:0.8em; margin-top:10px; opacity:0.7">
-                ${timeMsg}
-            </div>
+            <div class="time-bonus">${timeText}</div>
         `;
     }
 </script>
