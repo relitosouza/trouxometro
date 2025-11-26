@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trouxômetro - Edição Diagnóstico Clínico</title>
+    <title>Trouxômetro - Edição Cronológica</title>
     <style>
         :root {
             --container-bg: rgba(255, 255, 255, 0.95);
@@ -13,12 +13,14 @@
             --input-bg: #fff;
             --input-border: #ddd;
             --result-bg: rgba(0,0,0,0.05);
+            --clock-color: #2c3e50;
         }
 
         /* TEMA MANHÃ */
         body.morning {
             background: linear-gradient(120deg, #89f7fe 0%, #66a6ff 100%);
             --accent-color: #0984e3;
+            --clock-color: #0984e3;
         }
 
         /* TEMA TARDE */
@@ -26,9 +28,10 @@
             background: linear-gradient(45deg, #ff9a9e 0%, #fad0c4 99%, #fecfef 100%);
             --accent-color: #e84393;
             --text-color: #6d214f;
+            --clock-color: #d63031;
         }
 
-        /* TEMA NOITE (Céu Estrelado) */
+        /* TEMA NOITE */
         body.night {
             background-color: #0f0c29;
             background-image: 
@@ -45,6 +48,7 @@
             --input-bg: rgba(255, 255, 255, 0.1);
             --input-border: #485460;
             --result-bg: rgba(0,0,0,0.3);
+            --clock-color: #00d2d3;
         }
 
         body {
@@ -76,6 +80,15 @@
             letter-spacing: 1px;
         }
 
+        /* ESTILOS DO HEADER (BADGE + RELÓGIO) */
+        .header-info {
+            margin-bottom: 25px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
         .theme-badge { 
             font-size: 0.75em; 
             background: var(--accent-color); 
@@ -83,10 +96,23 @@
             padding: 4px 12px; 
             border-radius: 20px; 
             display: inline-block;
-            margin-bottom: 20px;
             font-weight: bold;
         }
         body.night .theme-badge { color: #000; box-shadow: 0 0 10px var(--accent-color); }
+
+        /* ESTILO DO RELÓGIO DIGITAL */
+        .digital-clock {
+            font-family: 'Courier New', Courier, monospace; /* Fonte monoespaçada para números */
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--clock-color);
+            letter-spacing: 2px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+            transition: color 0.5s ease;
+        }
+        body.night .digital-clock {
+            text-shadow: 0 0 10px var(--accent-color);
+        }
 
         input {
             width: 100%; padding: 15px; margin: 15px 0;
@@ -144,7 +170,6 @@
         .message { font-size: 1.2em; color: var(--text-color); display: block; margin-bottom: 15px; }
         .message strong { color: var(--accent-color); }
         
-        /* NOVO: Estilo da Lista de Motivos */
         .reasons-list {
             text-align: left;
             background: rgba(255, 255, 255, 0.1);
@@ -155,15 +180,15 @@
             font-size: 0.95em;
             color: var(--text-color);
             line-height: 1.5;
-            display: none; /* Começa invisível */
+            display: none;
         }
         .reasons-list li { margin-bottom: 8px; }
         body.night .reasons-list { background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); }
 
         .time-bonus {
-            font-size: 0.8em; color: var(--text-color); opacity: 0.7;
-            background: rgba(0,0,0,0.05); padding: 5px 15px; border-radius: 20px;
-            display: inline-block; margin-top: 10px;
+            font-size: 0.85em; color: var(--text-color); opacity: 0.8;
+            background: rgba(0,0,0,0.05); padding: 8px 15px; border-radius: 20px;
+            display: inline-block; margin-top: 10px; font-weight: 600;
         }
         body.night .time-bonus { background: rgba(255,255,255,0.1); }
 
@@ -175,10 +200,14 @@
 
 <div class="container">
     <h1>🤡 Trouxômetro</h1>
-    <div id="themeIndicator" class="theme-badge">...</div>
+    
+    <div class="header-info">
+        <div id="themeIndicator" class="theme-badge">...</div>
+        <div id="clockDisplay" class="digital-clock">00:00:00</div>
+    </div>
     
     <input type="text" id="nameInput" placeholder="Nome do(a) iludido(a)..." autocomplete="off">
-    <button id="btnCalc" onclick="iniciarProcessamento()">Calcular Diagnóstico</button>
+    <button id="btnCalc" onclick="iniciarProcessamento()">Calcular Agora</button>
     
     <div id="loading">
         <div class="spinner"></div>
@@ -189,88 +218,100 @@
 </div>
 
 <script>
-    // ========= 1. TEMA (Lógica Mantida) =========
-    let currentHour = new Date().getHours();
-    // currentHour = 20; // Descomente para testar o modo noite
+    // ========= 1. RELÓGIO E TEMA =========
+    // Atualiza o relógio a cada segundo
+    function updateClock() {
+        const now = new Date();
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
+        
+        document.getElementById('clockDisplay').innerText = `${hours}:${minutes}:${seconds}`;
+        
+        // Atualiza o tema baseado na hora atual
+        setDynamicTheme(now.getHours());
+    }
 
-    function setDynamicTheme() {
+    function setDynamicTheme(hour) {
         const body = document.body;
         const badge = document.getElementById('themeIndicator');
         let mode = "";
+        
         body.classList.remove('morning', 'afternoon', 'night');
 
-        if (currentHour >= 6 && currentHour < 12) {
-            body.classList.add('morning'); mode = "☀️ MANHÃ";
-        } else if (currentHour >= 12 && currentHour < 18) {
-            body.classList.add('afternoon'); mode = "🌤️ TARDE";
+        if (hour >= 6 && hour < 12) {
+            body.classList.add('morning'); 
+            mode = "☀️ MANHÃ (Modo Zumbi)";
+        } else if (hour >= 12 && hour < 18) {
+            body.classList.add('afternoon'); 
+            mode = "🌤️ TARDE (Modo Produtivo)";
         } else {
-            body.classList.add('night'); mode = "🌃 NOITE ESTRELADA";
+            body.classList.add('night'); 
+            mode = "🌃 NOITE ESTRELADA (Modo Carente)";
         }
         badge.innerText = mode;
     }
-    setDynamicTheme();
+
+    // Inicia o relógio imediatamente
+    setInterval(updateClock, 1000);
+    updateClock(); // Chama uma vez para não esperar 1s
 
     // ========= 2. FRASES DE LOADING =========
     const loadingPhrases = [
         "Acessando histórico de humilhação...",
         "Calculando quantas vezes você foi feito de palhaço...",
-        "Verificando se você curtiu foto antiga do ex...",
+        "Verificando curtidas em fotos de 2018...",
         "Medindo a profundidade do poço...",
         "Consultando o SPC (Sistema de Paixão e Carência)...",
         "Detectando indiretas nos Stories...",
         "Chamando o VAR da ilusão..."
     ];
 
-    // ========= 3. BANCO DE DADOS DE DIAGNÓSTICOS (NOVO) =========
+    // ========= 3. BANCO DE DADOS DINÂMICO =========
     const diagnosticosDB = {
-        nivel1: { // 0 a 29%
+        nivel1: { 
             titulo: "Escudo de Vibranium",
             sintomas: [
                 "Você visualiza e não responde (por querer).",
-                "Seu coração é uma pedra de gelo revestida de Teflon.",
-                "Desconfia até quando a avó diz 'eu te amo'.",
+                "Seu coração é gelado como cerveja de boteco.",
+                "Desconfia até de 'Bom dia'.",
                 "Tem planilha no Excel para avaliar os 'crushes'.",
-                "Bloqueia antes de se apegar.",
-                "Considera 'Bom dia' como pedido de casamento e foge."
+                "Bloqueia antes de se apegar."
             ]
         },
-        nivel2: { // 30 a 59%
+        nivel2: {
             titulo: "Iludido(a) Recreativo(a)",
             sintomas: [
-                "Já stalkeou o ex do atual (e o atual do ex) hoje.",
-                "Acredita na frase lendária: 'não é você, sou eu'.",
-                "Responde em 3 segundos quem demorou 6 horas.",
-                "Cria fanfic na cabeça antes do primeiro encontro.",
-                "Posta indireta nos stories esperando UMA visualização específica.",
-                "Acha que curtir story é pedido de namoro."
+                "Stalkeou o ex hoje (só pra conferir).",
+                "Acredita no 'não é você, sou eu'.",
+                "Responde rápido demais.",
+                "Cria fanfic na cabeça no ônibus.",
+                "Posta story esperando visualização específica."
             ]
         },
-        nivel3: { // 60 a 85%
+        nivel3: {
             titulo: "Membro VIP do Cirque du Soleil",
             sintomas: [
-                "Pede Uber para o 'date' ir embora (e você paga).",
-                "Acredita piamente que 'ele(a) vai mudar por mim'.",
-                "Tem uma playlist chamada 'Depressão Domingo à Noite'.",
-                "Já perdoou a mesma vacilada 3 vezes (na mesma semana).",
-                "Manda print da conversa para 5 grupos pedindo análise semântica.",
-                "Chora ouvindo Marília Mendonça mesmo estando solteiro(a)."
+                "Pede Uber pro date ir embora (e paga).",
+                "Acha que ele(a) vai mudar por você.",
+                "Playlist de sofrência é a mais ouvida.",
+                "Perdoou a mesma vacilada 3 vezes.",
+                "Manda print pra 5 grupos analisarem."
             ]
         },
-        nivel4: { // 86 a 100%
+        nivel4: {
             titulo: "Patrimônio Histórico da Ilusão",
             sintomas: [
-                "Tatuou o nome da pessoa com 2 semanas de namoro.",
-                "Já planejou o casamento enquanto a pessoa nem sabia seu sobrenome.",
-                "Emprestou o cartão de crédito (e o nome ficou sujo).",
-                "Acha que ciúme possessivo é 'prova de amor'.",
-                "Vendeu o carro para pagar a dívida do 'amor da vida'.",
-                "Fez promessa para santo para o ex voltar."
+                "Tatuou o nome com 1 semana de namoro.",
+                "Planejou casamento no primeiro encontro.",
+                "Nome sujo por emprestar cartão.",
+                "Acha ciúme possessivo 'fofo'.",
+                "Fez promessa pra ex voltar."
             ]
         }
     };
 
     function getMotivosAleatorios(lista) {
-        // Mistura a lista e pega os 3 primeiros
         const embaralhado = lista.sort(() => 0.5 - Math.random());
         return embaralhado.slice(0, 3);
     }
@@ -293,7 +334,6 @@
         btn.disabled = true;
         btn.innerHTML = "Analisando...";
 
-        // Animação das frases de loading
         let counter = 0;
         loadingText.innerText = loadingPhrases[Math.floor(Math.random() * loadingPhrases.length)];
         
@@ -313,52 +353,66 @@
         }, 4000);
     }
 
-    // ========= 5. GERAÇÃO DO RESULTADO =========
+    // ========= 5. CÁLCULO DINÂMICO POR HORÁRIO =========
     let percentageElement, messageElement, bonusElement, listElement;
 
     function prepararResultado(name) {
         const resultDiv = document.getElementById('result');
+        const currentHour = new Date().getHours();
         
-        // Algoritmo de soma de caracteres
+        // SOMA BÁSICA DOS CARACTERES
         let sum = 0;
         for (let i = 0; i < name.length; i++) { sum += name.toLowerCase().charCodeAt(i); }
-        let score = (sum % 80); 
+        
+        let finalScore = 0;
+        let explanation = "";
 
-        // Bônus de horário
-        let bonus = 0; let timeText = "Horário Seguro (Sem bônus)";
-        if (currentHour >= 12 && currentHour < 18) {
-            bonus = 15; timeText = "Multa da Tarde (+15%)";
-        } else if (currentHour >= 18 || currentHour < 6) {
-            bonus = 30; timeText = "Adicional Noturno (+30%)";
+        // === LÓGICA DO RELÓGIO ===
+        if (currentHour >= 6 && currentHour < 12) {
+            // MANHÃ: Porcentagem reduzida (Nível de Sono)
+            // É difícil ser trouxa quando se está com sono.
+            // Fórmula: (Resto 60) -> Máximo 59 + 10 = 69% (Raramente chega a 100%)
+            finalScore = (sum % 60) + 10;
+            explanation = "⚖️ Fator Matinal: Seu cérebro ainda está acordando, a chance de cair em golpe é menor.";
+            
+        } else if (currentHour >= 12 && currentHour < 18) {
+            // TARDE: Porcentagem Padrão (Tédio/Rotina)
+            // Fórmula: (Resto 80) -> Máximo 79 + 5 = 84%
+            finalScore = (sum % 80) + 5;
+            explanation = "📉 Fator Comercial: Horário de trabalho, foco em planilhas, não em paixões.";
+
+        } else {
+            // NOITE: Porcentagem Aumentada (Carência)
+            // Fórmula: (Resto 90) + 30 de bônus = Facilmente passa de 100%
+            finalScore = (sum % 90) + 30;
+            explanation = "🌑 Fator Madrugada: A carência noturna aumenta sua pontuação em +30% automaticamente.";
         }
 
-        let total = score + bonus;
-        if (total > 100) total = 100;
+        // Limite de 100%
+        if (finalScore > 100) finalScore = 100;
+        if (finalScore < 0) finalScore = 0;
 
-        // Seleção do nível
+        // Seleção do nível baseado no score calculado
         let diagData;
-        if (total < 30) diagData = diagnosticosDB.nivel1;
-        else if (total < 60) diagData = diagnosticosDB.nivel2;
-        else if (total < 85) diagData = diagnosticosDB.nivel3;
+        if (finalScore < 35) diagData = diagnosticosDB.nivel1;
+        else if (finalScore < 65) diagData = diagnosticosDB.nivel2;
+        else if (finalScore < 88) diagData = diagnosticosDB.nivel3;
         else diagData = diagnosticosDB.nivel4;
 
-        // Seleção dos motivos
-        const motivosSelecionados = getMotivosAleatorios([...diagData.sintomas]); // Copia array para não alterar original
+        const motivosSelecionados = getMotivosAleatorios([...diagData.sintomas]);
         
         let listaHTML = `<ul class="reasons-list result-item">`;
         motivosSelecionados.forEach(m => listaHTML += `<li>${m}</li>`);
         listaHTML += `</ul>`;
 
-        // Inserção no DOM
         resultDiv.innerHTML = `
-            <div class="percentage result-item">${total}%</div>
-            <div class="message result-item">Diagnóstico: <strong>${diagData.titulo}</strong></div>
+            <div class="percentage result-item">${finalScore}%</div>
+            <div class="message result-item">Nível: <strong>${diagData.titulo}</strong></div>
             ${listaHTML}
-            <div class="time-bonus result-item">${timeText}</div>
+            <div class="time-bonus result-item">${explanation}</div>
         `;
         resultDiv.style.display = "block";
 
-        // Seleciona elementos para animação
         percentageElement = resultDiv.querySelector('.percentage');
         messageElement = resultDiv.querySelector('.message');
         listElement = resultDiv.querySelector('.reasons-list');
@@ -367,23 +421,15 @@
         revelarResultadoLentamente();
     }
 
-    // ========= 6. ANIMAÇÃO FINAL =========
     function revelarResultadoLentamente() {
-        // 1. Porcentagem
         setTimeout(() => { if(percentageElement) percentageElement.classList.add('show-now'); }, 100);
-
-        // 2. Diagnóstico
         setTimeout(() => { if(messageElement) messageElement.classList.add('show-now'); }, 800);
-
-        // 3. Lista de Motivos (Fade In Suave)
         setTimeout(() => { 
             if(listElement) {
                 listElement.style.display = 'block';
                 setTimeout(() => listElement.classList.add('show-now'), 50);
             }
         }, 1600);
-
-        // 4. Bônus
         setTimeout(() => { if(bonusElement) bonusElement.classList.add('show-now'); }, 2800);
     }
 </script>
