@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trouxômetro Final Edition</title>
+    <title>Trouxômetro - Edição Osasco Night</title>
     <style>
         :root {
             --container-bg: rgba(255, 255, 255, 0.95);
@@ -15,39 +15,35 @@
             --result-bg: rgba(0,0,0,0.05);
         }
 
-        /* TEMA MANHÃ (Céu limpo) */
+        /* TEMA MANHÃ */
         body.morning {
             background: linear-gradient(120deg, #89f7fe 0%, #66a6ff 100%);
             --accent-color: #0984e3;
         }
 
-        /* TEMA TARDE (Pôr do Sol intenso) */
+        /* TEMA TARDE */
         body.afternoon {
             background: linear-gradient(45deg, #ff9a9e 0%, #fad0c4 99%, #fecfef 100%);
             --accent-color: #e84393;
             --text-color: #6d214f;
         }
 
-        /* TEMA NOITE (Vibe Cidade Densa/Osasco Night) */
+        /* TEMA NOITE (Vibe Osasco Night) */
         body.night {
-            /* Fundo complexo para simular cidade à noite */
             background-color: #0f0c29;
+            /* Camadas para simular luzes e prédios */
             background-image: 
-                /* Luzes distantes (pontos amarelos) */
                 radial-gradient(circle at 50% 80%, rgba(255, 230, 100, 0.2) 1px, transparent 2px),
                 radial-gradient(circle at 10% 85%, rgba(255, 230, 100, 0.2) 1px, transparent 2px),
-                radial-gradient(circle at 90% 85%, rgba(255, 230, 100, 0.2) 1px, transparent 2px),
-                /* Silhueta de prédios densos (padrão de repetição na parte inferior) */
                 repeating-linear-gradient(90deg, #000 0px, #000 15px, transparent 15px, transparent 30px, #111 30px, #111 50px, transparent 50px, transparent 55px),
-                /* O céu noturno gradiente */
                 linear-gradient(to bottom, #24243e 0%, #302b63 50%, #0f0c29 100%);
             
-            background-size: 100px 100px, 120px 120px, 80px 80px, 100% 30%, 100% 100%;
-            background-repeat: repeat, repeat, repeat, repeat-x, no-repeat;
-            background-position: 0 0, 0 0, 0 0, bottom, center;
+            background-size: 100px 100px, 120px 120px, 100% 30%, 100% 100%;
+            background-repeat: repeat, repeat, repeat-x, no-repeat;
+            background-position: 0 0, 0 0, bottom, center;
             background-attachment: fixed;
 
-            --container-bg: rgba(20, 20, 35, 0.9); /* Mais escuro e opaco */
+            --container-bg: rgba(20, 20, 35, 0.95);
             --text-color: #ecf0f1;
             --accent-color: #00d2d3; /* Ciano Neon */
             --secondary-color: #ff79cb; /* Rosa Neon */
@@ -76,7 +72,6 @@
             width: 90%;
             backdrop-filter: blur(5px);
             border: 1px solid rgba(255,255,255,0.1);
-            z-index: 10;
         }
 
         h1 { 
@@ -84,7 +79,6 @@
             margin-bottom: 5px;
             text-transform: uppercase;
             letter-spacing: 1px;
-            text-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
 
         .theme-badge { 
@@ -117,7 +111,7 @@
         button:hover { transform: translateY(-3px); filter: brightness(1.1); }
         button:disabled { background: #95a5a6; cursor: not-allowed; transform: none; box-shadow: none; color: #eee;}
 
-        /* LOADING AREA */
+        /* LOADING */
         #loading { display: none; margin-top: 25px; }
         .spinner {
             width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.1);
@@ -130,23 +124,23 @@
             animation: fadeText 0.5s ease-in-out;
         }
 
-        /* RESULT AREA & SLOW ANIMATIONS */
+        /* RESULT AREA */
         #result {
             margin-top: 25px; padding: 20px; border-radius: 12px;
-            display: none; /* Escondido inicialmente */
+            display: none;
             background: var(--result-bg);
             border: 2px dashed var(--accent-color);
             overflow: hidden;
         }
 
-        /* Os elementos do resultado começam invisíveis */
+        /* Elementos começam invisíveis */
         .result-item {
             opacity: 0;
             transform: translateY(20px);
             transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
 
-        /* Quando a classe 'show-now' é adicionada pelo JS, eles aparecem */
+        /* Classe para mostrar */
         .result-item.show-now {
             opacity: 1;
             transform: translateY(0);
@@ -186,9 +180,11 @@
 </div>
 
 <script>
-    // ========= 1. TEMA (Auto-detect com "Vibe Osasco") =========
+    // ========= 1. TEMA =========
     let currentHour = new Date().getHours();
-    // currentHour = 22; // Descomente para testar o modo noite
+    
+    // Se quiser forçar o modo noite para testar o fundo, descomente a linha abaixo:
+    // currentHour = 22; 
 
     function setDynamicTheme() {
         const body = document.body;
@@ -197,25 +193,24 @@
         body.classList.remove('morning', 'afternoon', 'night');
 
         if (currentHour >= 6 && currentHour < 12) {
-            body.classList.add('morning'); mode = "☀️ MANHÃ: Racional";
+            body.classList.add('morning'); mode = "☀️ MANHÃ";
         } else if (currentHour >= 12 && currentHour < 18) {
-            body.classList.add('afternoon'); mode = "🌤️ TARDE: Emocionado";
+            body.classList.add('afternoon'); mode = "🌤️ TARDE";
         } else {
-            body.classList.add('night'); mode = "🌃 NOITE: Vibe Urbana Caótica";
+            body.classList.add('night'); mode = "🌃 NOITE EM OSASCO";
         }
         badge.innerText = mode;
     }
     setDynamicTheme();
 
-    // ========= 2. FRASES DE CARREGAMENTO =========
+    // ========= 2. FRASES =========
     const phrases = [
-        "Analisando histórico de 'visualizado'...",
-        "Calculando o tamanho da humilhação...",
+        "Acessando histórico de humilhação...",
+        "Calculando quantas vezes você foi feito de palhaço...",
         "Verificando se você curtiu foto antiga do ex...",
         "Medindo a profundidade do poço...",
         "Consultando o SPC (Sistema de Paixão e Carência)...",
         "Detectando indiretas nos Stories...",
-        "Passando o pano para as suas atitudes...",
         "Chamando o VAR da ilusão..."
     ];
 
@@ -224,13 +219,11 @@
         const nameInput = document.getElementById('nameInput');
         const name = nameInput.value.trim();
         if (!name) { 
-            nameInput.placeholder = "DIGITE UM NOME!!!";
-            nameInput.style.borderColor = "red";
-            setTimeout(() => { nameInput.style.borderColor = ""; }, 1000);
+            alert("Digite o nome!");
             return; 
         }
 
-        // Limpa resultado anterior
+        // Limpa
         document.getElementById('result').innerHTML = '';
         document.getElementById('result').style.display = 'none';
 
@@ -242,58 +235,53 @@
         btn.disabled = true;
         btn.innerHTML = "Analisando...";
 
-        // Troca frases durante 5 segundos
+        // Roda frases por 4.5 segundos
         let counter = 0;
         loadingText.innerText = phrases[Math.floor(Math.random() * phrases.length)];
         
         const interval = setInterval(() => {
             loadingText.innerText = phrases[Math.floor(Math.random() * phrases.length)];
-            // Efeito visual de "piscar" o texto
             loadingText.style.opacity = 0.5;
             setTimeout(() => { loadingText.style.opacity = 1; }, 200);
             counter++;
-        }, 1200);
+        }, 1100);
 
-        // Termina após 6 segundos (tempo suficiente para ler as frases de loading)
         setTimeout(() => {
             clearInterval(interval);
             loadingDiv.style.display = 'none';
             btn.disabled = false;
             btn.innerText = "Calcular Novamente";
             prepararResultado(name);
-        }, 6000);
+        }, 4500);
     }
 
-    // ========= 4. CÁLCULO E PREPARAÇÃO =========
+    // ========= 4. CÁLCULO E HTML =========
     let percentageElement, messageElement, bonusElement;
 
     function prepararResultado(name) {
         const resultDiv = document.getElementById('result');
         
-        // Cálculo Base
         let sum = 0;
         for (let i = 0; i < name.length; i++) { sum += name.toLowerCase().charCodeAt(i); }
         let score = (sum % 80); 
 
-        // Cálculo Bônus Horário
-        let bonus = 0; let timeText = "Horário Seguro (Sem bônus)";
+        let bonus = 0; let timeText = "Horário Seguro";
         if (currentHour >= 12 && currentHour < 18) {
             bonus = 15; timeText = "Multa da Tarde (+15%)";
         } else if (currentHour >= 18 || currentHour < 6) {
-            bonus = 30; timeText = "Adicional Noturno de Carência (+30%)";
+            bonus = 30; timeText = "Adicional Noturno (+30%)";
         }
 
         let total = score + bonus;
         if (total > 100) total = 100;
 
-        // Mensagens Finais
         let msg = "";
-        if (total < 30) msg = "Você é vacinado(a). O golpe tá aí, mas você não cai.";
-        else if (total < 60) msg = "Nível Padrão. Sofre, chora, mas segue a vida.";
-        else if (total < 85) msg = "Cuidado! Você está a um passo de voltar com o ex.";
-        else msg = "🚨 ALERTA MÁXIMO: Tutela Obrigatória. Você não pode tomar decisões sozinho(a).";
+        if (total < 30) msg = "Você é vacinado(a).";
+        else if (total < 60) msg = "Nível Padrão. Sofre, mas vive.";
+        else if (total < 85) msg = "Cuidado! Risco de recaída.";
+        else msg = "🚨 ALERTA MÁXIMO: Bloqueie o celular!";
 
-        // Monta o HTML com as classes ocultas (result-item)
+        // Insere o HTML (invisível no inicio)
         resultDiv.innerHTML = `
             <div class="percentage result-item">${total}%</div>
             <div class="message result-item">${msg}</div>
@@ -301,31 +289,31 @@
         `;
         resultDiv.style.display = "block";
 
-        // Pegamos os elementos criados
-        percentageElement = resultDiv.querySelector.('.percentage');
+        // Seleciona os elementos AGORA que eles existem
+        percentageElement = resultDiv.querySelector('.percentage');
         messageElement = resultDiv.querySelector('.message');
         bonusElement = resultDiv.querySelector('.time-bonus');
 
-        // Inicia a sequência de revelação lenta
+        // Chama a animação
         revelarResultadoLentamente();
     }
 
-    // ========= 5. REVELAÇÃO LENTA (Animação Sequencial) =========
+    // ========= 5. ANIMAÇÃO DE REVELAÇÃO =========
     function revelarResultadoLentamente() {
-        // Aparece a porcentagem imediatamente
+        // 1. Porcentagem
         setTimeout(() => {
-            percentageElement.classList.add('show-now');
+            if(percentageElement) percentageElement.classList.add('show-now');
         }, 100);
 
-        // Aparece a mensagem principal depois de 1 segundo
+        // 2. Frase (1.5s depois)
         setTimeout(() => {
-            messageElement.classList.add('show-now');
-        }, 1100);
+            if(messageElement) messageElement.classList.add('show-now');
+        }, 1500);
 
-        // Aparece o bônus depois de 2.2 segundos
+        // 3. Bônus (2.5s depois)
         setTimeout(() => {
-            bonusElement.classList.add('show-now');
-        }, 2200);
+            if(bonusElement) bonusElement.classList.add('show-now');
+        }, 2500);
     }
 </script>
 
