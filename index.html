@@ -3,111 +3,144 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trouxômetro Profissional</title>
+    <title>Trouxômetro Dinâmico</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            background: linear-gradient(135deg, #FF9A9E 0%, #FECFEF 99%, #FECFEF 100%);
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
             margin: 0;
+            color: #333;
         }
         .container {
             background: white;
-            padding: 2rem;
-            border-radius: 15px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            padding: 2.5rem;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
             text-align: center;
-            max-width: 400px;
+            max-width: 450px;
             width: 90%;
         }
-        h1 { color: #6a11cb; margin-bottom: 20px; }
+        h1 { color: #d63031; margin-bottom: 10px; }
+        p.subtitle { color: #666; font-size: 0.9em; margin-bottom: 25px; }
         input {
             width: 100%;
-            padding: 10px;
+            padding: 15px;
             margin: 10px 0;
-            border: 2px solid #ddd;
-            border-radius: 5px;
+            border: 2px solid #eee;
+            border-radius: 10px;
             box-sizing: border-box;
             font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s;
         }
+        input:focus { border-color: #d63031; }
         button {
-            background: #2575fc;
+            background: #d63031;
             color: white;
             border: none;
-            padding: 12px 25px;
-            border-radius: 5px;
+            padding: 15px 25px;
+            border-radius: 10px;
             cursor: pointer;
-            font-size: 16px;
-            transition: transform 0.2s;
+            font-size: 18px;
+            font-weight: bold;
+            transition: transform 0.2s, background 0.2s;
             width: 100%;
+            margin-top: 10px;
         }
-        button:hover { background: #1a5bbf; transform: scale(1.02); }
+        button:hover { background: #b71c1c; transform: translateY(-2px); }
         #result {
-            margin-top: 20px;
-            padding: 15px;
-            border-radius: 8px;
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: 12px;
             display: none;
-            animation: fadeIn 0.5s;
+            animation: popIn 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
         }
-        .percentage { font-size: 3em; font-weight: bold; color: #6a11cb; display: block; }
-        .message { font-size: 1.1em; color: #555; margin-top: 10px; display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .percentage { font-size: 4em; font-weight: 800; color: #d63031; display: block; line-height: 1; }
+        .details { font-size: 0.9em; color: #888; margin-top: 5px; font-style: italic; }
+        .message { font-size: 1.2em; font-weight: 500; color: #333; margin-top: 15px; display: block; }
+        
+        @keyframes popIn { 
+            0% { opacity: 0; transform: scale(0.5); } 
+            100% { opacity: 1; transform: scale(1); } 
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>🤡 Trouxômetro</h1>
-    <p>Descubra sua porcentagem oficial de trouxa.</p>
-    <input type="text" id="nameInput" placeholder="Digite seu nome completo...">
-    <button onclick="calcularTrouxa()">Calcular Nível</button>
+    <h1>🤡 Trouxômetro 2.0</h1>
+    <p class="subtitle">Agora ajustado pelo fuso horário da sua carência.</p>
+    
+    <input type="text" id="nameInput" placeholder="Nome do(a) iludido(a)...">
+    <button onclick="calcularTrouxa()">Calcular Nível Agora</button>
+    
     <div id="result"></div>
 </div>
 
 <script>
     function calcularTrouxa() {
-        const name = document.getElementById('nameInput').value.trim().toLowerCase();
+        const name = document.getElementById('nameInput').value.trim();
         const resultDiv = document.getElementById('result');
         
         if (name === "") {
-            alert("Por favor, digite um nome. Não seja trouxa de deixar em branco!");
+            alert("Não seja trouxa de deixar o nome em branco!");
             return;
         }
 
-        // Algoritmo "Pseudo-Científico" (Soma dos códigos ASCII para consistência)
+        // 1. Cálculo Base (Nome)
         let sum = 0;
         for (let i = 0; i < name.length; i++) {
-            sum += name.charCodeAt(i);
+            sum += name.toLowerCase().charCodeAt(i);
         }
+        let baseScore = (sum % 80); // Base vai até 79 para deixar espaço para o bônus da tarde
+
+        // 2. Fator Horário (A Lógica da Tarde)
+        const agora = new Date();
+        const hora = agora.getHours();
+        let bonusVespertino = 0;
+        let timeMessage = "🌞 De manhã você é forte.";
+
+        // Se for depois do meio-dia (12h) e antes das 5 da manhã
+        if (hora >= 12 || hora < 5) {
+            // Adiciona entre 10% e 30% de trouxice dependendo de quão tarde é
+            bonusVespertino = 20 + (hora % 5); 
+            timeMessage = "🌚 O Sol caiu, a dignidade também.";
+            
+            if (hora >= 22 || hora <= 4) {
+                bonusVespertino += 15; // Madrugada da Saudade
+                timeMessage = "🦇 Madrugada: horário nobre dos trouxas.";
+            }
+        }
+
+        let totalScore = baseScore + bonusVespertino;
         
-        // Gera um número entre 0 e 100 baseado no nome + data (para variar um pouco se quiser, aqui é fixo pelo nome)
-        let percentage = (sum % 101);
+        // Trava em 100% (ou estoura para 110% se for crítico)
+        if (totalScore > 100) totalScore = 100; // Trouxa supremo
 
-        // Mensagens personalizadas
+        // Mensagens
         let message = "";
-        let color = "";
-
-        if (percentage < 20) {
-            message = "Você é vacinado! Quase impossível te enganar.";
-            color = "#27ae60"; // Verde
-        } else if (percentage < 50) {
-            message = "Nível aceitável. Cai em uns papinhos, mas sobrevive.";
-            color = "#f39c12"; // Laranja
-        } else if (percentage < 80) {
-            message = "Cuidado! Você tende a acreditar que 'ele(a) mudou'.";
-            color = "#e67e22"; // Laranja escuro
+        if (totalScore < 30) {
+            message = "Você está lúcido(a). Parabéns!";
+        } else if (totalScore < 60) {
+            message = "Nível médio. Cuidado com playlists tristes.";
+        } else if (totalScore < 90) {
+            message = "Perigo! Afaste-se do celular agora.";
         } else {
-            message = "ALERTA MÁXIMO! Você provavelmente está namorando alguém que não te assume.";
-            color = "#c0392b"; // Vermelho
+            message = "CORRA! Você está prestes a voltar com o ex.";
         }
 
+        // Exibir
         resultDiv.style.display = "block";
-        resultDiv.style.border = "2px solid " + color;
+        resultDiv.style.backgroundColor = totalScore > 80 ? "#ffcdd2" : "#e8f5e9";
+        
         resultDiv.innerHTML = `
-            <span class="percentage" style="color: ${color}">${percentage}%</span>
+            <span class="percentage">${totalScore}%</span>
+            <span class="details">Base: ${baseScore}% + Adicional de Horário: ${bonusVespertino}%</span>
+            <div style="margin-top:5px; font-size:0.8em; color:#666">(${timeMessage})</div>
             <span class="message">${message}</span>
         `;
     }
